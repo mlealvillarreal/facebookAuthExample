@@ -39,7 +39,8 @@ passport.deserializeUser(function(obj, done) {
 passport.use(new FacebookStrategy({
     clientID: config.facebook_api_key,
     clientSecret:config.facebook_api_secret ,
-    callbackURL: config.callback_url
+    callbackURL: config.callback_url,
+    profileFields: ['id', 'emails', 'name', 'gender', 'profileUrl', 'photos']
   },
   function(accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
@@ -86,10 +87,23 @@ app.get('/auth/facebook', passport.authenticate('facebook',{scope:'email'}));
 
 
 app.get('/auth/facebook/callback',
-  passport.authenticate('facebook', { successRedirect : '/', failureRedirect: '/login' }),
+  passport.authenticate('facebook', { successRedirect : '/checarDatos', failureRedirect: '/login' }),
   function(req, res) {
     res.redirect('/');
   });
+
+app.get('/checarDatos', function(req, res){
+
+  console.log(`
+    id: ${req.user.id}
+    name: ${req.user.name.givenName}
+    middle name: ${req.user.name.middleName}
+    family name: ${req.user.name.familyName}
+    emails: ${req.user.emails[0].value}
+    provider: ${req.user.provider}
+  `)
+  res.redirect('/');
+});
 
 app.get('/logout', function(req, res){
   req.logout();
